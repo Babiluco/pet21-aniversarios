@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PET 21 · Aniversários da Equipe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#12142a;
+    --bg-1:#1b1e3d;
+    --bg-2:#232755;
+    --gold:#f2b705;
+    --coral:#ff6f91;
+    --lilac:#8b8fd9;
+    --ink:#f5f3ee;
+    --muted:#9497c2;
+    --line:rgba(245,243,238,0.12);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 60% 40% at 15% 10%, rgba(139,143,217,0.15), transparent 60%),
+      radial-gradient(ellipse 50% 35% at 85% 0%, rgba(255,111,145,0.12), transparent 60%),
+      var(--bg-0);
+    color:var(--ink);
+    font-family:'Space Grotesk', sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+  .stars{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+  }
+  .stars span{
+    position:absolute; width:2px; height:2px; border-radius:50%;
+    background:var(--ink); opacity:0.35;
+  }
+  .wrap{
+    position:relative; z-index:1;
+    max-width:1040px;
+    margin:0 auto;
+    padding:64px 24px 100px;
+  }
+  header{
+    text-align:center;
+    margin-bottom:36px;
+  }
+  .eyebrow{
+    font-family:'Space Mono', monospace;
+    letter-spacing:0.28em;
+    text-transform:uppercase;
+    font-size:12px;
+    color:var(--gold);
+    margin-bottom:18px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-style:italic;
+    font-size:clamp(42px, 8vw, 84px);
+    line-height:1.02;
+    margin:0 0 14px;
+    background:linear-gradient(100deg, var(--ink) 30%, var(--coral) 65%, var(--gold) 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .sub{
+    font-size:16px;
+    color:var(--muted);
+    max-width:480px;
+    margin:0 auto;
+    line-height:1.6;
+  }
+
+  /* orbit */
+  .orbit-section{
+    display:flex;
+    justify-content:center;
+    margin:56px 0 40px;
+  }
+  .orbit-wrap{
+    position:relative;
+    width:min(560px, 92vw);
+    aspect-ratio:1/1;
+  }
+  svg.orbit{ width:100%; height:100%; overflow:visible; }
+  .month-tick{ stroke:var(--line); stroke-width:1; }
+  .month-label{
+    font-family:'Space Mono', monospace;
+    font-size:10px;
+    fill:var(--muted);
+    text-anchor:middle;
+  }
+  .radial-line{
+    stroke:var(--line);
+    stroke-width:1.25;
+  }
+  .radial-line.next{
+    stroke:var(--gold);
+    stroke-width:1.75;
+  }
+  .node{
+    cursor:pointer;
+  }
+  .node circle.dot{
+    fill:var(--bg-2);
+    stroke:var(--lilac);
+    stroke-width:1.5;
+    transition:all .25s ease;
+  }
+  .node:hover circle.dot{
+    stroke:var(--coral);
+    transform:scale(1.12);
+    transform-origin:center;
+  }
+  .node.next circle.dot{
+    fill:var(--gold);
+    stroke:var(--gold);
+    animation:pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ filter:drop-shadow(0 0 0px rgba(242,183,5,0.6)); }
+    50%{ filter:drop-shadow(0 0 10px rgba(242,183,5,0.85)); }
+  }
+  .node text.initials{
+    font-family:'Space Mono', monospace;
+    font-size:10px;
+    font-weight:700;
+    fill:var(--ink);
+    text-anchor:middle;
+    dominant-baseline:central;
+    pointer-events:none;
+  }
+  .node.next text.initials{ fill:var(--bg-0); }
+
+  .center-card{
+    position:absolute;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    text-align:center;
+    width:150px;
+  }
+  .center-card .label{
+    font-family:'Space Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.15em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  .center-card .name{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:20px;
+    line-height:1.15;
+    color:var(--gold);
+  }
+  .center-card .days{
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    color:var(--ink);
+    margin-top:6px;
+  }
+
+  .tooltip{
+    position:fixed;
+    pointer-events:none;
+    background:var(--bg-2);
+    border:1px solid var(--line);
+    padding:10px 14px;
+    border-radius:8px;
+    font-size:13px;
+    line-height:1.4;
+    opacity:0;
+    transition:opacity .15s ease;
+    z-index:20;
+    max-width:200px;
+  }
+  .tooltip strong{ font-family:'Fraunces', serif; font-style:italic; color:var(--gold); display:block; font-size:15px; }
+  .tooltip span{ color:var(--muted); font-family:'Space Mono', monospace; font-size:11px; }
+
+  /* cards grid */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+    gap:14px;
+    margin-top:20px;
+  }
+  .card{
+    background:linear-gradient(160deg, var(--bg-1), var(--bg-2));
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:20px 20px 18px;
+    position:relative;
+    transition:transform .2s ease, border-color .2s ease;
+  }
+  .card:hover{
+    transform:translateY(-3px);
+    border-color:var(--lilac);
+  }
+  .card.today{
+    border-color:var(--gold);
+    box-shadow:0 0 0 1px var(--gold), 0 0 24px rgba(242,183,5,0.25);
+  }
+  .card .row1{
+    display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;
+  }
+  .card .initials-badge{
+    width:38px; height:38px;
+    border-radius:50%;
+    background:var(--bg-0);
+    border:1px solid var(--lilac);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Mono', monospace;
+    font-weight:700;
+    font-size:13px;
+    color:var(--ink);
+    flex-shrink:0;
+  }
+  .card .date-badge{
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    color:var(--muted);
+    padding:4px 9px;
+    border:1px solid var(--line);
+    border-radius:20px;
+  }
+  .card .name{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:19px;
+    margin:0 0 8px;
+    color:var(--ink);
+  }
+  .card .countdown{
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    color:var(--coral);
+  }
+  .card.today .countdown{ color:var(--gold); font-weight:700; }
+
+  footer{
+    text-align:center;
+    margin-top:60px;
+    color:var(--muted);
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.08em;
+  }
+
+  #confetti-canvas{
+    position:fixed; inset:0; z-index:50; pointer-events:none;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .node.next circle.dot{ animation:none; }
+    .card{ transition:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+<canvas id="confetti-canvas"></canvas>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">PET 21 · turma</div>
+    <h1>aniversários</h1>
+    <p class="sub">Um giro pelo ano da nossa equipe. O ponto dourado mostra quem é o próximo a soprar as velinhas.</p>
+  </header>
+
+  <div class="orbit-section">
+    <div class="orbit-wrap" id="orbitWrap"></div>
+  </div>
+
+  <div class="grid" id="cardsGrid"></div>
+
+  <footer>feito com carinho para a PET 21</footer>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const MEMBERS = [
+  { name: "Maisa Preis", day: 23, month: 3 },
+  { name: "Luan Sicchieroli", day: 2, month: 5 },
+  { name: "Stephanie Monteiro", day: 3, month: 6 },
+  { name: "Sumie Amemiya", day: 2, month: 7 },
+  { name: "Paula Scorelick", day: 17, month: 9 },
+  { name: "Barbara Brito", day: 14, month: 11 }
+];
+
+const MONTH_NAMES = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+
+function initials(name){
+  return name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+}
+
+function startOfDay(d){
+  const n = new Date(d);
+  n.setHours(0,0,0,0);
+  return n;
+}
+
+function nextOccurrence(today, month, day){
+  let year = today.getFullYear();
+  let candidate = new Date(year, month-1, day);
+  candidate = startOfDay(candidate);
+  if(candidate < today){
+    candidate = new Date(year+1, month-1, day);
+  }
+  return candidate;
+}
+
+function daysBetween(a,b){
+  return Math.round((b-a)/86400000);
+}
+
+const today = startOfDay(new Date());
+
+const enriched = MEMBERS.map(m=>{
+  const next = nextOccurrence(today, m.month, m.day);
+  const diff = daysBetween(today, next);
+  return {...m, next, diffDays: diff, isToday: diff===0};
+}).sort((a,b)=> a.diffDays - b.diffDays);
+
+const soonest = enriched[0];
+
+/* ---------- starfield ---------- */
+const starsEl = document.getElementById('stars');
+for(let i=0;i<70;i++){
+  const s = document.createElement('span');
+  s.style.left = Math.random()*100+'%';
+  s.style.top = Math.random()*100+'%';
+  s.style.opacity = (0.15 + Math.random()*0.4).toFixed(2);
+  const size = (Math.random()*1.5+1).toFixed(1);
+  s.style.width = size+'px';
+  s.style.height = size+'px';
+  starsEl.appendChild(s);
+}
+
+/* ---------- orbit svg ---------- */
+const wrap = document.getElementById('orbitWrap');
+const size = 560;
+const cx = size/2, cy = size/2;
+const rOrbit = size*0.36;
+const rTick = size*0.44;
+const rLabel = size*0.475;
+
+function angleFor(month, day){
+  const frac = ((month-1) + (day-1)/30) / 12;
+  return frac*360 - 90; // start at top, clockwise
+}
+
+function pointAt(r, angleDeg){
+  const rad = angleDeg * Math.PI/180;
+  return { x: cx + r*Math.cos(rad), y: cy + r*Math.sin(rad) };
+}
+
+let svgParts = [];
+svgParts.push(`<svg class="orbit" viewBox="0 0 ${size} ${size}">`);
+
+// orbit ring
+svgParts.push(`<circle cx="${cx}" cy="${cy}" r="${rOrbit}" fill="none" stroke="var(--line)" stroke-width="1"/>`);
+
+// month ticks + labels
+for(let m=0; m<12; m++){
+  const ang = (m/12)*360 - 90;
+  const p1 = pointAt(rOrbit-6, ang);
+  const p2 = pointAt(rOrbit+6, ang);
+  svgParts.push(`<line class="month-tick" x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}"/>`);
+  const lp = pointAt(rLabel, ang);
+  svgParts.push(`<text class="month-label" x="${lp.x}" y="${lp.y}">${MONTH_NAMES[m]}</text>`);
+}
+
+// radial lines + nodes
+enriched.forEach(mem=>{
+  const ang = angleFor(mem.month, mem.day);
+  const p = pointAt(rOrbit, ang);
+  const isNext = mem === soonest;
+  svgParts.push(`<line class="radial-line ${isNext?'next':''}" x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}"/>`);
+});
+
+enriched.forEach(mem=>{
+  const ang = angleFor(mem.month, mem.day);
+  const p = pointAt(rOrbit, ang);
+  const isNext = mem === soonest;
+  const r = isNext ? 20 : 16;
+  svgParts.push(`
+    <g class="node ${isNext?'next':''}" data-name="${mem.name}" data-date="${String(mem.day).padStart(2,'0')}/${String(mem.month).padStart(2,'0')}" data-diff="${mem.diffDays}">
+      <circle class="dot" cx="${p.x}" cy="${p.y}" r="${r}"/>
+      <text class="initials" x="${p.x}" y="${p.y}">${initials(mem.name)}</text>
+    </g>
+  `);
+});
+
+svgParts.push(`</svg>`);
+wrap.innerHTML = svgParts.join("");
+
+// center card
+const centerCard = document.createElement('div');
+centerCard.className = 'center-card';
+centerCard.innerHTML = `
+  <div class="label">próxima</div>
+  <div class="name">${soonest.name.split(" ")[0]}</div>
+  <div class="days">${soonest.isToday ? "é hoje! 🎉" : soonest.diffDays+" dia"+(soonest.diffDays===1?"":"s")}</div>
+`;
+wrap.appendChild(centerCard);
+
+// tooltip behavior
+const tooltip = document.getElementById('tooltip');
+wrap.querySelectorAll('.node').forEach(node=>{
+  node.addEventListener('mousemove', (e)=>{
+    const name = node.dataset.name;
+    const date = node.dataset.date;
+    const diff = parseInt(node.dataset.diff,10);
+    const diffText = diff===0 ? "é hoje! 🎉" : `faltam ${diff} dia${diff===1?"":"s"}`;
+    tooltip.innerHTML = `<strong>${name}</strong><span>${date} · ${diffText}</span>`;
+    tooltip.style.left = (e.clientX+16)+'px';
+    tooltip.style.top = (e.clientY+16)+'px';
+    tooltip.style.opacity = 1;
+  });
+  node.addEventListener('mouseleave', ()=>{
+    tooltip.style.opacity = 0;
+  });
+});
+
+/* ---------- cards grid ---------- */
+const gridEl = document.getElementById('cardsGrid');
+gridEl.innerHTML = enriched.map(mem=>{
+  const dateStr = `${String(mem.day).padStart(2,'0')} ${MONTH_NAMES[mem.month-1]}`;
+  const countdown = mem.isToday ? "é hoje! 🎉" : `faltam ${mem.diffDays} dia${mem.diffDays===1?"":"s"}`;
+  return `
+    <div class="card ${mem.isToday?'today':''}">
+      <div class="row1">
+        <div class="initials-badge">${initials(mem.name)}</div>
+        <div class="date-badge">${dateStr}</div>
+      </div>
+      <div class="name">${mem.name}</div>
+      <div class="countdown">${countdown}</div>
+    </div>
+  `;
+}).join("");
+
+/* ---------- confetti if someone's birthday is today ---------- */
+if(enriched.some(m=>m.isToday)){
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const colors = ['#f2b705','#ff6f91','#8b8fd9','#f5f3ee'];
+  const pieces = Array.from({length:120}, ()=>({
+    x: Math.random()*canvas.width,
+    y: -20 - Math.random()*canvas.height,
+    w: 5+Math.random()*5,
+    h: 8+Math.random()*6,
+    color: colors[Math.floor(Math.random()*colors.length)],
+    speed: 1.5+Math.random()*2.5,
+    drift: (Math.random()-0.5)*1.5,
+    rot: Math.random()*360,
+    rotSpeed: (Math.random()-0.5)*6
+  }));
+
+  let frame=0;
+  function animate(){
+    frame++;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p=>{
+      p.y += p.speed;
+      p.x += p.drift;
+      p.rot += p.rotSpeed;
+      if(p.y > canvas.height+20){ p.y = -20; p.x = Math.random()*canvas.width; }
+      ctx.save();
+      ctx.translate(p.x,p.y);
+      ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      ctx.restore();
+    });
+    if(frame < 900){ requestAnimationFrame(animate); }
+    else { ctx.clearRect(0,0,canvas.width,canvas.height); }
+  }
+  animate();
+}
+</script>
+</body>
+</html>
