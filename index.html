@@ -143,7 +143,7 @@
     top:50%; left:50%;
     transform:translate(-50%,-50%);
     text-align:center;
-    width:150px;
+    width:180px;
   }
   .center-card .label{
     font-family:'Space Mono', monospace;
@@ -166,6 +166,80 @@
     font-size:12px;
     color:var(--ink);
     margin-top:6px;
+  }
+  .center-card .countdown-timer{
+    display:flex;
+    gap:18px;
+    justify-content:center;
+    margin-top:14px;
+  }
+  .center-card .ring{
+    position:relative;
+    width:66px;
+    height:66px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .center-card .ring .ring-bg{
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+    background: conic-gradient(var(--gold) calc(var(--pct)*1%), var(--bg-2) 0);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 6px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 6px));
+  }
+  .center-card .ring .num-wrap{
+    position:relative;
+    z-index:1;
+    width:54px;
+    height:54px;
+    border-radius:50%;
+    background:var(--bg-0);
+    border:1px solid var(--line);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+  }
+  .center-card .ring .num{
+    font-family:'Space Mono', monospace;
+    font-weight:700;
+    font-size:19px;
+    color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .center-card .ring .lbl{
+    font-family:'Space Mono', monospace;
+    font-size:8px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-top:2px;
+  }
+  .center-card .ring.bump .num-wrap{
+    animation: bump .4s ease;
+  }
+  @keyframes bump{
+    0%{ transform:scale(1); }
+    45%{ transform:scale(1.18); border-color:var(--coral); }
+    100%{ transform:scale(1); }
+  }
+  .center-card .countdown-detail{
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    color:var(--muted);
+    margin-top:10px;
+    opacity:0;
+    max-height:0;
+    overflow:hidden;
+    transition:opacity .25s ease, max-height .25s ease;
+  }
+  .center-card:hover .countdown-detail,
+  .center-card:focus-within .countdown-detail{
+    opacity:1;
+    max-height:20px;
   }
 
   .tooltip{
@@ -408,12 +482,65 @@ wrap.innerHTML = svgParts.join("");
 // center card
 const centerCard = document.createElement('div');
 centerCard.className = 'center-card';
+centerCard.setAttribute('tabindex', '0');
 centerCard.innerHTML = `
   <div class="label">próxima</div>
   <div class="name">${soonest.name.split(" ")[0]}</div>
-  <div class="days">${soonest.isToday ? "é hoje! 🎉" : soonest.diffDays+" dia"+(soonest.diffDays===1?"":"s")}</div>
+  <div class="countdown-timer" id="countdownTimer"></div>
+  <div class="countdown-detail" id="countdownDetail"></div>
 `;
 wrap.appendChild(centerCard);
+
+// cronômetro ao vivo (dias + horas) com anéis de progresso
+function renderCountdown(targetDate){
+  const timerEl = document.getElementById('countdownTimer');
+  const detailEl = document.getElementById('countdownDetail');
+  if(!timerEl) return;
+
+  let lastDays = null, lastHours = null;
+
+  function tick(){
+    const now = new Date();
+    let diff = targetDate - now;
+
+    if(diff <= 0){
+      timerEl.innerHTML = `<div class="ring"><div class="ring-bg" style="--pct:100"></div><div class="num-wrap"><div class="num">🎉</div><div class="lbl">é hoje</div></div></div>`;
+      detailEl.textContent = '';
+      return;
+    }
+
+    const totalDays = Math.floor(diff / 86400000);
+    const remAfterDays = diff % 86400000;
+    const totalHours = Math.floor(remAfterDays / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+
+    // anel de dias: progresso do dia atual em direção à meia-noite
+    const pctDay = 100 - (remAfterDays / 86400000 * 100);
+    // anel de horas: progresso da hora atual em direção ao próximo minuto cheio
+    const remAfterHours = remAfterDays % 3600000;
+    const pctHour = 100 - (remAfterHours / 3600000 * 100);
+
+    timerEl.innerHTML = `
+      <div class="ring ${totalDays !== lastDays ? 'bump' : ''}">
+        <div class="ring-bg" style="--pct:${pctDay.toFixed(1)}"></div>
+        <div class="num-wrap"><div class="num">${totalDays}</div><div class="lbl">dias</div></div>
+      </div>
+      <div class="ring ${totalHours !== lastHours ? 'bump' : ''}">
+        <div class="ring-bg" style="--pct:${pctHour.toFixed(1)}"></div>
+        <div class="num-wrap"><div class="num">${String(totalHours).padStart(2,'0')}</div><div class="lbl">horas</div></div>
+      </div>
+    `;
+    detailEl.textContent = `${minutes}min ${seconds}s`;
+
+    lastDays = totalDays;
+    lastHours = totalHours;
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+renderCountdown(soonest.next);
 
 // tooltip behavior
 const tooltip = document.getElementById('tooltip');
